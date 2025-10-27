@@ -251,10 +251,26 @@
             width: 50px;
             text-align: right;
             font-size: 13px;
+            cursor: pointer;
+            padding: 2px 4px;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+
+        .task-time:hover {
+            background-color: #ffeef2;
         }
 
         .task-name {
             flex: 1;
+            cursor: pointer;
+            padding: 2px 4px;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+
+        .task-name:hover {
+            background-color: #ffeef2;
         }
 
         .task-actions {
@@ -264,7 +280,7 @@
             flex-shrink: 0;
         }
 
-        .edit-btn, .delete-btn {
+        .delete-btn {
             background: #ff6b95;
             color: white;
             border: none;
@@ -278,7 +294,7 @@
             justify-content: center;
         }
 
-        .edit-btn:hover, .delete-btn:hover {
+        .delete-btn:hover {
             background: #e0557e;
         }
 
@@ -424,9 +440,9 @@
                 margin-right: 10px;
             }
 
-            .edit-btn, .delete-btn {
+            .delete-btn {
                 padding: 3px 6px;
-                font-size: 10px;
+                font-size: 18px;
                 height: 30px;
 				width: 30px;
             }
@@ -803,6 +819,24 @@
             }
         }
 
+        // Функция для редактирования названия задачи
+        async function editTaskName(taskId) {
+            if (tasks[currentDate]) {
+                const taskIndex = tasks[currentDate].findIndex(task => task.id === taskId);
+                if (taskIndex !== -1) {
+                    const currentName = tasks[currentDate][taskIndex].name;
+                    const newName = prompt('Введите новое название задачи:', currentName);
+                    
+                    if (newName && newName.trim() !== '') {
+                        tasks[currentDate][taskIndex].name = newName.trim();
+                        await saveTasksToFirebase();
+                    } else if (newName !== null) {
+                        alert('Пожалуйста, введите название задачи');
+                    }
+                }
+            }
+        }
+
         function displayTasks() {
             const container = document.getElementById('tasksContainer');
             
@@ -820,11 +854,10 @@
                     <div class="task-checkbox ${task.completed ? 'checked' : ''}" onclick="toggleTaskCompletion(${task.id})"></div>
                     <div class="task-content">
                         <div class="task-text">
-                            <span class="task-name">${task.name}</span>
-                            <span class="task-time">${task.time}</span>
+                            <span class="task-name" onclick="editTaskName(${task.id})">${task.name}</span>
+                            <span class="task-time" onclick="editTaskTime(${task.id})">${task.time}</span>
                         </div>
                         <div class="task-actions">
-                            <button class="edit-btn" onclick="editTaskTime(${task.id})">✎</button>
                             <button class="delete-btn" onclick="deleteTask(${task.id})">✕</button>
                         </div>
                     </div>
