@@ -125,7 +125,7 @@
         .time-input {
             display: flex;
             gap: 8px;
-            align-items: center;
+            align-items: stretch; /* Изменено на stretch для выравнивания высоты */
             margin-bottom: 15px;
         }
 
@@ -151,9 +151,12 @@
             font-size: 14px;
             font-weight: 600;
             transition: transform 0.2s;
-            height: 44px;
+            height: 44px; /* Фиксированная высота как у поля ввода */
             flex-shrink: 0;
             white-space: nowrap;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .add-btn:hover {
@@ -261,7 +264,7 @@
             flex-shrink: 0;
         }
 
-        .delete-btn {
+        .edit-btn, .delete-btn {
             background: #ff6b95;
             color: white;
             border: none;
@@ -275,7 +278,7 @@
             justify-content: center;
         }
 
-        .delete-btn:hover {
+        .edit-btn:hover, .delete-btn:hover {
             background: #e0557e;
         }
 
@@ -373,13 +376,13 @@
             }
 
             .date-input-container input {
-                /*padding-left: 90px;*/
+                padding-left: 90px;
                 height: 42px;
                 font-size: 14px;
             }
 
             .day-of-week {
-                font-size: 0.95em;
+                font-size: 0.85em;
                 left: 6px;
             }
 
@@ -401,6 +404,7 @@
             .time-input {
                 flex-direction: row; /* Оставляем в одну линию на мобильных */
                 gap: 6px;
+                align-items: stretch; /* Выравнивание по высоте */
             }
 
             .time-input input {
@@ -420,7 +424,7 @@
                 margin-right: 10px;
             }
 
-            .delete-btn {
+            .edit-btn, .delete-btn {
                 padding: 3px 6px;
                 font-size: 10px;
                 height: 22px;
@@ -776,6 +780,28 @@
             }
         }
 
+        // Функция для редактирования времени задачи
+        async function editTaskTime(taskId) {
+            if (tasks[currentDate]) {
+                const taskIndex = tasks[currentDate].findIndex(task => task.id === taskId);
+                if (taskIndex !== -1) {
+                    const currentTime = tasks[currentDate][taskIndex].time;
+                    const newTime = prompt('Введите новое время (формат ЧЧ:ММ):', currentTime);
+                    
+                    if (newTime && /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/.test(newTime)) {
+                        tasks[currentDate][taskIndex].time = newTime;
+                        
+                        // Сортировка по времени после изменения
+                        tasks[currentDate].sort((a, b) => a.time.localeCompare(b.time));
+                        
+                        await saveTasksToFirebase();
+                    } else if (newTime !== null) {
+                        alert('Пожалуйста, введите время в правильном формате (ЧЧ:ММ)');
+                    }
+                }
+            }
+        }
+
         function displayTasks() {
             const container = document.getElementById('tasksContainer');
             
@@ -797,6 +823,7 @@
                             <span class="task-time">${task.time}</span>
                         </div>
                         <div class="task-actions">
+                            <button class="edit-btn" onclick="editTaskTime(${task.id})">✎</button>
                             <button class="delete-btn" onclick="deleteTask(${task.id})">✕</button>
                         </div>
                     </div>
