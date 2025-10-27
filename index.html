@@ -21,6 +21,7 @@
             background: linear-gradient(135deg, #ffd1dc 0%, #ffb6c1 100%);
             min-height: 100vh;
             padding: 20px;
+            font-size: 14px; /* Базовый размер шрифта для мобильных */
         }
 
         .container {
@@ -35,45 +36,29 @@
         .header {
             background: linear-gradient(135deg, #ff85a2, #ff6b95);
             color: white;
-            padding: 30px;
+            padding: 20px;
             text-align: center;
         }
 
         .header h1 {
-            font-size: 2.5em;
+            font-size: 1.5em; /* Уменьшен размер для мобильных */
             margin-bottom: 10px;
         }
 
-        .header p {
-            opacity: 0.9;
-            font-size: 1.1em;
-        }
-
         .content {
-            padding: 30px;
+            padding: 20px;
         }
 
         .date-selector {
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
 
         .date-selector label {
             display: block;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             font-weight: 600;
             color: #2c3e50;
-            font-size: 1.1em;
-        }
-
-        .date-display {
-            font-size: 1.2em;
-            font-weight: 600;
-            color: #2c3e50;
-            margin-top: 10px;
-            padding: 10px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            text-align: center;
+            font-size: 1em;
         }
 
         .date-input-container {
@@ -84,12 +69,15 @@
 
         .date-input-container input {
             width: 100%;
-            padding: 12px 12px 12px 140px; /* Отступ слева для дня недели */
+            padding: 12px 12px 12px 100px; /* Уменьшен отступ для мобильных */
             border: 2px solid #ddd;
             border-radius: 8px;
-            font-size: 16px;
+            font-size: 16px; /* Фиксированный размер для iOS */
             transition: border-color 0.3s;
-            height: 48px;
+            height: 44px; /* Стандартная высота для мобильных */
+            background: white;
+            -webkit-appearance: none;
+            appearance: none;
         }
 
         .date-input-container input:focus {
@@ -99,15 +87,16 @@
 
         .day-of-week {
             position: absolute;
-            left: 12px;
+            left: 8px;
             top: 50%;
             transform: translateY(-50%);
             font-weight: 600;
             color: #ff6b95;
             pointer-events: none;
             background: white;
-            padding: 2px 8px;
+            padding: 2px 6px;
             border-radius: 4px;
+            font-size: 0.9em;
         }
 
         .task-input {
@@ -119,10 +108,13 @@
             padding: 12px;
             border: 2px solid #ddd;
             border-radius: 8px;
-            font-size: 16px;
+            font-size: 16px; /* Фиксированный размер для iOS */
             margin-bottom: 10px;
             transition: border-color 0.3s;
-            height: 48px;
+            height: 44px; /* Стандартная высота для мобильных */
+            background: white;
+            -webkit-appearance: none;
+            appearance: none;
         }
 
         .task-input input:focus {
@@ -132,7 +124,7 @@
 
         .time-input {
             display: flex;
-            gap: 10px;
+            gap: 8px;
             align-items: center;
             margin-bottom: 15px;
         }
@@ -141,23 +133,27 @@
             padding: 8px 12px;
             border: 2px solid #ddd;
             border-radius: 6px;
-            font-size: 14px;
-            width: 120px;
-            height: 48px;
+            font-size: 16px; /* Фиксированный размер для iOS */
+            flex: 1;
+            height: 44px;
+            background: white;
+            -webkit-appearance: none;
+            appearance: none;
         }
 
         .add-btn {
             background: linear-gradient(135deg, #ff6b95, #ff85a2);
             color: white;
             border: none;
-            padding: 12px 25px;
+            padding: 8px 16px;
             border-radius: 8px;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 14px;
             font-weight: 600;
             transition: transform 0.2s;
-            height: 48px;
+            height: 44px;
             flex-shrink: 0;
+            white-space: nowrap;
         }
 
         .add-btn:hover {
@@ -165,25 +161,25 @@
         }
 
         .tasks-list {
-            margin-top: 30px;
+            margin-top: 20px;
         }
 
         .tasks-list h3 {
             color: #2c3e50;
-            margin-bottom: 15px;
-            font-size: 1.3em;
+            margin-bottom: 12px;
+            font-size: 1.1em;
         }
 
         .task-item {
             display: flex;
             align-items: center;
-            padding: 12px 15px;
+            padding: 10px 12px;
             background: #f8f9fa;
             border-radius: 8px;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             border-left: 4px solid #ff6b95;
             transition: transform 0.2s;
-            min-height: 60px;
+            min-height: 50px; /* Уменьшенная высота */
         }
 
         .task-item:hover {
@@ -198,11 +194,11 @@
         }
 
         .task-checkbox {
-            width: 20px;
-            height: 20px;
+            width: 18px;
+            height: 18px;
             border-radius: 50%;
             border: 2px solid #ff6b95;
-            margin-right: 15px;
+            margin-right: 12px;
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -219,7 +215,7 @@
         .task-checkbox.checked::after {
             content: '✓';
             color: white;
-            font-size: 12px;
+            font-size: 10px;
             font-weight: bold;
         }
 
@@ -228,16 +224,16 @@
             justify-content: space-between;
             align-items: center;
             flex: 1;
-            gap: 15px;
+            gap: 10px;
         }
 
         .task-text {
             flex: 1;
-            font-size: 16px;
+            font-size: 14px;
             display: flex;
             align-items: center;
-            min-height: 24px;
-            gap: 15px; /* Расстояние между названием задачи и временем */
+            gap: 12px;
+            min-height: 20px;
         }
 
         .task-item.completed .task-text {
@@ -249,14 +245,19 @@
             color: #666;
             font-weight: 600;
             flex-shrink: 0;
-            width: 60px;
+            width: 50px;
             text-align: right;
+            font-size: 13px;
+        }
+
+        .task-name {
+            flex: 1;
         }
 
         .task-actions {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             flex-shrink: 0;
         }
 
@@ -264,11 +265,11 @@
             background: #ff6b95;
             color: white;
             border: none;
-            padding: 6px 12px;
+            padding: 4px 8px;
             border-radius: 4px;
             cursor: pointer;
-            font-size: 12px;
-            height: 28px;
+            font-size: 11px;
+            height: 24px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -292,14 +293,15 @@
             right: 0;
             background: white;
             border-radius: 0 0 8px 8px;
-            max-height: 200px;
+            max-height: 150px;
             overflow-y: auto;
         }
 
         .autocomplete-item {
-            padding: 10px 12px;
+            padding: 8px 12px;
             cursor: pointer;
             border-bottom: 1px solid #eee;
+            font-size: 14px;
         }
 
         .autocomplete-item:hover {
@@ -309,73 +311,133 @@
         .empty-state {
             text-align: center;
             color: #666;
-            padding: 40px;
+            padding: 30px;
             font-style: italic;
+            font-size: 14px;
         }
 
         .loading {
             text-align: center;
             color: #ff6b95;
-            padding: 20px;
+            padding: 15px;
+            font-size: 14px;
         }
 
-        @media (max-width: 600px) {
+        /* Стили для улучшения внешнего вид полей ввода на iOS */
+        input[type="date"],
+        input[type="time"],
+        input[type="text"] {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+        }
+
+        input[type="date"]:focus,
+        input[type="time"]:focus,
+        input[type="text"]:focus {
+            border-color: #ff6b95;
+            outline: none;
+        }
+
+        /* Убираем стандартные стили iOS */
+        input {
+            -webkit-border-radius: 8px;
+            border-radius: 8px;
+        }
+
+        /* Медиа-запросы для мобильных устройств */
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+                font-size: 13px;
+            }
+
             .container {
-                margin: 10px;
+                border-radius: 12px;
             }
-            
-            .content {
-                padding: 20px;
-            }
-            
+
             .header {
-                padding: 20px;
+                padding: 15px;
             }
-            
+
             .header h1 {
-                font-size: 2em;
+                font-size: 1.3em;
             }
-            
+
+            .content {
+                padding: 15px;
+            }
+
+            .date-input-container input {
+                padding-left: 90px;
+                height: 42px;
+                font-size: 14px;
+            }
+
+            .day-of-week {
+                font-size: 0.85em;
+                left: 6px;
+            }
+
+            .task-item {
+                padding: 8px 10px;
+                min-height: 46px;
+            }
+
+            .task-text {
+                font-size: 13px;
+                gap: 8px;
+            }
+
+            .task-time {
+                font-size: 12px;
+                width: 45px;
+            }
+
+            .time-input {
+                flex-direction: row; /* Оставляем в одну линию на мобильных */
+                gap: 6px;
+            }
+
+            .time-input input {
+                flex: 1;
+                height: 42px;
+            }
+
+            .add-btn {
+                padding: 6px 12px;
+                height: 42px;
+                font-size: 13px;
+            }
+
+            .task-checkbox {
+                width: 16px;
+                height: 16px;
+                margin-right: 10px;
+            }
+
+            .delete-btn {
+                padding: 3px 6px;
+                font-size: 10px;
+                height: 22px;
+            }
+        }
+
+        /* Для очень маленьких экранов */
+        @media (max-width: 320px) {
             .time-input {
                 flex-direction: column;
-                align-items: stretch;
             }
             
             .time-input input {
                 width: 100%;
             }
             
-            .task-content {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 8px;
-            }
-            
-            .task-actions {
-                margin-top: 10px;
-                align-self: flex-end;
-            }
-
-            .date-input-container input {
-                padding-left: 12px;
-            }
-
-            .day-of-week {
-                position: static;
-                transform: none;
-                margin-bottom: 5px;
-                text-align: center;
-            }
-
-            .task-time {
-                text-align: left;
-                margin-right: 0;
-            }
-
-            .task-text {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 5px;
+            .add-btn {
+                width: 100%;
             }
         }
     </style>
