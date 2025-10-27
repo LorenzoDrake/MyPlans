@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Планировщик задач с Firebase</title>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #ffd1dc 0%, #ffb6c1 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #ff85a2, #ff6b95);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .date-selector {
+            margin-bottom: 30px;
+        }
+
+        .date-selector label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 1.1em;
+        }
+
+        .date-display {
+            font-size: 1.2em;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-top: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .date-input-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .date-input-container input {
+            width: 100%;
+            padding: 12px 12px 12px 140px; /* Отступ слева для дня недели */
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+            height: 48px;
+        }
+
+        .date-input-container input:focus {
+            outline: none;
+            border-color: #ff6b95;
+        }
+
+        .day-of-week {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-weight: 600;
+            color: #ff6b95;
+            pointer-events: none;
+            background: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        .task-input {
+            margin-bottom: 20px;
+        }
+
+        .task-input input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            margin-bottom: 10px;
+            transition: border-color 0.3s;
+            height: 48px;
+        }
+
+        .task-input input:focus {
+            outline: none;
+            border-color: #ff6b95;
+        }
+
+        .time-input {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .time-input input {
+            padding: 8px 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            width: 120px;
+            height: 48px;
+        }
+
+        .add-btn {
+            background: linear-gradient(135deg, #ff6b95, #ff85a2);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: transform 0.2s;
+            height: 48px;
+            flex-shrink: 0;
+        }
+
+        .add-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .tasks-list {
+            margin-top: 30px;
+        }
+
+        .tasks-list h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .task-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid #ff6b95;
+            transition: transform 0.2s;
+            min-height: 60px;
+        }
+
+        .task-item:hover {
+            transform: translateX(5px);
+            background: #ffeef2;
+        }
+
+        .task-item.completed {
+            opacity: 0.7;
+            background: #ffebef;
+            border-left-color: #ff6b95;
+        }
+
+        .task-checkbox {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid #ff6b95;
+            margin-right: 15px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .task-checkbox.checked {
+            background: #ff6b95;
+            border-color: #ff6b95;
+        }
+
+        .task-checkbox.checked::after {
+            content: '✓';
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .task-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex: 1;
+            gap: 15px;
+        }
+
+        .task-text {
+            flex: 1;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            min-height: 24px;
+            gap: 15px; /* Расстояние между названием задачи и временем */
+        }
+
+        .task-item.completed .task-text {
+            text-decoration: line-through;
+            color: #666;
+        }
+
+        .task-time {
+            color: #666;
+            font-weight: 600;
+            flex-shrink: 0;
+            width: 60px;
+            text-align: right;
+        }
+
+        .task-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
+        .delete-btn {
+            background: #ff6b95;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .delete-btn:hover {
+            background: #e0557e;
+        }
+
+        .autocomplete {
+            position: relative;
+        }
+
+        .autocomplete-items {
+            position: absolute;
+            border: 1px solid #ddd;
+            border-top: none;
+            z-index: 99;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border-radius: 0 0 8px 8px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .autocomplete-item {
+            padding: 10px 12px;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+        }
+
+        .autocomplete-item:hover {
+            background: #ffeef2;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #666;
+            padding: 40px;
+            font-style: italic;
+        }
+
+        .loading {
+            text-align: center;
+            color: #ff6b95;
+            padding: 20px;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                margin: 10px;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            .header {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .time-input {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .time-input input {
+                width: 100%;
+            }
+            
+            .task-content {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+            
+            .task-actions {
+                margin-top: 10px;
+                align-self: flex-end;
+            }
+
+            .date-input-container input {
+                padding-left: 12px;
+            }
+
+            .day-of-week {
+                position: static;
+                transform: none;
+                margin-bottom: 5px;
+                text-align: center;
+            }
+
+            .task-time {
+                text-align: left;
+                margin-right: 0;
+            }
+
+            .task-text {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📅 Планировщик задач</h1>
+        </div>
+        
+        <div class="content">
+            <div class="date-selector">
+                <label for="datePicker">Выберите дату:</label>
+                <div class="date-input-container">
+                    <div class="day-of-week" id="dayOfWeek"></div>
+                    <input type="date" id="datePicker">
+                </div>
+            </div>
+            
+            <div class="task-input">
+                <div class="autocomplete">
+                    <input type="text" id="taskInput" placeholder="Введите задачу (например: Duolingo, Чтение книги...)">
+                    <div class="autocomplete-items" id="autocompleteList"></div>
+                </div>
+                
+                <div class="time-input">
+                    <input type="time" id="taskTime" value="09:00">
+                    <button class="add-btn" onclick="addTask()">+ Добавить задачу</button>
+                </div>
+            </div>
+            
+            <div class="tasks-list">
+                <h3>Задачи на день:</h3>
+                <div id="tasksContainer"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Конфигурация Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyDoiNfxZJW82TUUs_9EvNgLPAouy-z7zkE",
+            authDomain: "myplans-482a7.firebaseapp.com",
+            projectId: "myplans-482a7",
+            storageBucket: "myplans-482a7.firebasestorage.app",
+            messagingSenderId: "113908694915",
+            appId: "1:113908694915:web:b1282f1b45d554cdce00b6",
+            measurementId: "G-DN64C1WENZ"
+        };
+
+        // Инициализация Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // ID для одного пользователя
+        const USER_ID = 'single_user';
+
+        // Задачи по умолчанию для каждого дня
+        const defaultDailyTasks = [
+            { name: "Мозаика", time: "15:00" },
+            { name: "Рисование", time: "16:00" },
+            { name: "Спорт", time: "18:00" },
+            { name: "Степпер", time: "18:30" },
+            { name: "Ванна", time: "21:00" },
+            { name: "Уборка", time: "20:00" },
+            { name: "Duolingo", time: "17:00" },
+            { name: "Книга", time: "17:30" },
+            { name: "ПДД", time: "19:30" }
+        ];
+
+        // Предопределенные задачи для автозаполнения
+        const predefinedTasks = [
+            { name: "Мозаика", defaultTime: "15:00" },
+            { name: "Рисование", defaultTime: "16:00" },
+            { name: "Спорт", defaultTime: "18:00" },
+            { name: "Степпер", defaultTime: "18:30" },
+            { name: "Ванна", defaultTime: "21:00" },
+            { name: "Уборка", defaultTime: "20:00" },
+            { name: "Duolingo", defaultTime: "17:00" },
+            { name: "Книга", defaultTime: "17:30" },
+            { name: "ПДД", defaultTime: "19:30" },
+            { name: "Медитация", defaultTime: "08:00" },
+            { name: "Планирование дня", defaultTime: "09:00" },
+            { name: "Работа", defaultTime: "10:00" },
+            { name: "Обед", defaultTime: "13:00" },
+            { name: "Прогулка", defaultTime: "19:00" },
+            { name: "Подготовка ко сну", defaultTime: "22:00" }
+        ];
+
+        // Названия дней недели
+        const daysOfWeek = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
+
+        let tasks = {};
+        let userTasks = []; // Массив для хранения пользовательских задач
+        let currentDate = new Date().toISOString().split('T')[0];
+        let unsubscribeTasks = null;
+        let unsubscribeUserTasks = null;
+
+        // Инициализация приложения
+        document.addEventListener('DOMContentLoaded', function() {
+            const datePicker = document.getElementById('datePicker');
+            datePicker.value = currentDate;
+            datePicker.max = new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split('T')[0];
+            
+            // Обновляем отображение дня недели при загрузке
+            updateDayOfWeek(currentDate);
+            
+            // Настройка слушателей
+            datePicker.addEventListener('change', function() {
+                currentDate = this.value;
+                updateDayOfWeek(currentDate);
+                loadTasksFromFirebase();
+            });
+
+            // Автозаполнение
+            const taskInput = document.getElementById('taskInput');
+            taskInput.addEventListener('input', handleAutocomplete);
+            taskInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    addTask();
+                }
+            });
+
+            // Загружаем задачи при старте
+            loadTasksFromFirebase();
+            loadUserTasks();
+        });
+
+        // Функция для обновления отображения дня недели в поле ввода даты
+        function updateDayOfWeek(dateString) {
+            const dayOfWeekElement = document.getElementById('dayOfWeek');
+            const date = new Date(dateString);
+            const dayOfWeek = daysOfWeek[date.getDay()];
+            
+            dayOfWeekElement.textContent = dayOfWeek;
+        }
+
+        // Функция для создания задач по умолчанию для любого дня
+        async function createDefaultTasksForDate(dateString) {
+            if (!tasks[dateString] || tasks[dateString].length === 0) {
+                console.log("Создаем задачи по умолчанию для даты:", dateString);
+                
+                tasks[dateString] = defaultDailyTasks.map(task => ({
+                    name: task.name,
+                    time: task.time,
+                    id: Date.now() + Math.floor(Math.random() * 1000),
+                    completed: false,
+                    createdAt: new Date().toISOString()
+                }));
+                
+                // Сортировка по времени
+                tasks[dateString].sort((a, b) => a.time.localeCompare(b.time));
+                
+                await saveTasksToFirebaseForDate(dateString);
+                console.log("Задачи по умолчанию созданы для даты:", dateString);
+            }
+        }
+
+        function loadTasksFromFirebase() {
+            // Отписываемся от предыдущих слушателей
+            if (unsubscribeTasks) {
+                unsubscribeTasks();
+            }
+
+            const tasksRef = db.collection('tasks').doc(USER_ID).collection('dates').doc(currentDate);
+
+            // Слушаем изменения в реальном времени
+            unsubscribeTasks = tasksRef.onSnapshot(
+                async (doc) => {
+                    if (doc.exists) {
+                        tasks[currentDate] = doc.data().tasks || [];
+                        // Если задач нет, создаем задачи по умолчанию
+                        if (tasks[currentDate].length === 0) {
+                            await createDefaultTasksForDate(currentDate);
+                        }
+                    } else {
+                        tasks[currentDate] = [];
+                        // Создаем задачи по умолчанию для новой даты
+                        await createDefaultTasksForDate(currentDate);
+                    }
+                    displayTasks();
+                },
+                (error) => {
+                    console.error('Ошибка загрузки задач:', error);
+                    document.getElementById('tasksContainer').innerHTML = 
+                        '<div class="empty-state">Ошибка загрузки задач. Проверьте подключение.</div>';
+                }
+            );
+        }
+
+        // Сохранение задач для конкретной даты
+        async function saveTasksToFirebaseForDate(dateString) {
+            try {
+                const tasksRef = db.collection('tasks').doc(USER_ID).collection('dates').doc(dateString);
+                
+                if (tasks[dateString] && tasks[dateString].length > 0) {
+                    await tasksRef.set({
+                        tasks: tasks[dateString],
+                        lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                } else {
+                    // Если задач нет, удаляем документ
+                    await tasksRef.delete();
+                }
+            } catch (error) {
+                console.error('Ошибка сохранения задач:', error);
+                alert('Ошибка сохранения: ' + error.message);
+            }
+        }
+
+        // Загрузка пользовательских задач для автодополнения
+        function loadUserTasks() {
+            const userTasksRef = db.collection('userTasks').doc(USER_ID);
+            
+            unsubscribeUserTasks = userTasksRef.onSnapshot(
+                (doc) => {
+                    if (doc.exists) {
+                        userTasks = doc.data().tasks || [];
+                    } else {
+                        userTasks = [];
+                    }
+                },
+                (error) => {
+                    console.error('Ошибка загрузки пользовательских задач:', error);
+                }
+            );
+        }
+
+        // Сохранение пользовательских задач для автодополнения
+        async function saveUserTasks() {
+            try {
+                const userTasksRef = db.collection('userTasks').doc(USER_ID);
+                await userTasksRef.set({
+                    tasks: userTasks,
+                    lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            } catch (error) {
+                console.error('Ошибка сохранения пользовательских задач:', error);
+            }
+        }
+
+        async function saveTasksToFirebase() {
+            await saveTasksToFirebaseForDate(currentDate);
+        }
+
+        function handleAutocomplete() {
+            const input = document.getElementById('taskInput');
+            const val = input.value.toLowerCase();
+            const autocompleteList = document.getElementById('autocompleteList');
+            
+            autocompleteList.innerHTML = '';
+            
+            if (!val) return;
+            
+            // Объединяем предопределенные и пользовательские задачи
+            const allTasks = [...predefinedTasks, ...userTasks];
+            
+            const matches = allTasks.filter(task => 
+                task.name.toLowerCase().includes(val)
+            );
+            
+            matches.forEach(task => {
+                const item = document.createElement('div');
+                item.className = 'autocomplete-item';
+                item.innerHTML = `<strong>${task.name}</strong>${task.defaultTime ? ` (обычно в ${task.defaultTime})` : ''}`;
+                item.addEventListener('click', function() {
+                    input.value = task.name;
+                    if (task.defaultTime) {
+                        document.getElementById('taskTime').value = task.defaultTime;
+                    }
+                    autocompleteList.innerHTML = '';
+                });
+                autocompleteList.appendChild(item);
+            });
+        }
+
+        async function addTask() {
+            const taskInput = document.getElementById('taskInput');
+            const taskTime = document.getElementById('taskTime');
+            
+            const taskName = taskInput.value.trim();
+            const time = taskTime.value;
+            
+            if (!taskName) {
+                alert('Пожалуйста, введите название задачи');
+                return;
+            }
+            
+            if (!tasks[currentDate]) {
+                tasks[currentDate] = [];
+            }
+            
+            tasks[currentDate].push({
+                name: taskName,
+                time: time,
+                id: Date.now(),
+                completed: false,
+                createdAt: new Date().toISOString()
+            });
+            
+            // Сортировка по времени
+            tasks[currentDate].sort((a, b) => a.time.localeCompare(b.time));
+            
+            // Сохраняем задачу в список пользовательских задач для автодополнения
+            if (!userTasks.some(task => task.name === taskName)) {
+                userTasks.push({
+                    name: taskName,
+                    defaultTime: time
+                });
+                await saveUserTasks();
+            }
+            
+            await saveTasksToFirebase();
+            
+            // Очистка поля ввода
+            taskInput.value = '';
+            taskInput.focus();
+            document.getElementById('autocompleteList').innerHTML = '';
+        }
+
+        async function toggleTaskCompletion(taskId) {
+            if (tasks[currentDate]) {
+                const taskIndex = tasks[currentDate].findIndex(task => task.id === taskId);
+                if (taskIndex !== -1) {
+                    tasks[currentDate][taskIndex].completed = !tasks[currentDate][taskIndex].completed;
+                    await saveTasksToFirebase();
+                }
+            }
+        }
+
+        async function deleteTask(taskId) {
+            if (tasks[currentDate]) {
+                tasks[currentDate] = tasks[currentDate].filter(task => task.id !== taskId);
+                await saveTasksToFirebase();
+            }
+        }
+
+        function displayTasks() {
+            const container = document.getElementById('tasksContainer');
+            
+            if (!tasks[currentDate] || tasks[currentDate].length === 0) {
+                container.innerHTML = '<div class="empty-state">На этот день задач пока нет. Добавьте первую задачу!</div>';
+                return;
+            }
+            
+            container.innerHTML = '';
+            
+            tasks[currentDate].forEach(task => {
+                const taskElement = document.createElement('div');
+                taskElement.className = `task-item ${task.completed ? 'completed' : ''}`;
+                taskElement.innerHTML = `
+                    <div class="task-checkbox ${task.completed ? 'checked' : ''}" onclick="toggleTaskCompletion(${task.id})"></div>
+                    <div class="task-content">
+                        <div class="task-text">
+                            <span class="task-name">${task.name}</span>
+                            <span class="task-time">${task.time}</span>
+                        </div>
+                        <div class="task-actions">
+                            <button class="delete-btn" onclick="deleteTask(${task.id})">✕</button>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(taskElement);
+            });
+        }
+
+        // Закрытие автозаполнения при клике вне поля
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.autocomplete')) {
+                document.getElementById('autocompleteList').innerHTML = '';
+            }
+        });
+    </script>
+</body>
+</html>
